@@ -12,7 +12,7 @@ The goal of this project is to:
 
 🗂 Repository Contents
 - `basic-exercises.sql`: Contains SQL exercises and queries
-- `chinook.db`: SQLite database used for practice
+- `northwind.db`: SQLite database used for practice
 
 💡 Skills Demonstrated
 - Data querying (SELECT, WHERE, GROUP BY)
