@@ -11,8 +11,8 @@ The goal of this project is to:
 - Build a strong SQL portfolio for data analysis roles
 
 🗂 Repository Contents
-- 'basic-exercises.sql': Contains SQL exercises and queries
-- 'northwind.db': SQLite database used for practice
+- `basic-exercises.sql`: Contains SQL exercises and queries
+- `chinook.db`: SQLite database used for practice
 
 💡 Skills Demonstrated
 - Data querying (SELECT, WHERE, GROUP BY)
