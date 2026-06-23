@@ -3,17 +3,30 @@
 -- ============================================
 
 -- 1. Display a table with categories and their descriptions (8 rows expected)
-
+SELECT CategoryName, Description
+FROM Categories;
 -- 2. Display a table with contact names, customer IDs, and company names
 --    for all customers from London (6 rows expected)
-
+SELECT CustomerID, CompanyName
+FROM Customers 
+WHERE City = 'London';
 -- 3. Display all available columns from suppliers that have a fax number (13 rows expected)
-
+SELECT SupplierID, CompanyName
+FROM Suppliers 
+WHERE Fax IS NOT NULL;
 -- 4. Count the total number of orders from 1997 (Expected result: 408)
-
+SELECT COUNT (OrderID)
+FROM Orders 
+WHERE OrderDate BETWEEN '1997-01-01' AND '1997-12-31'
+------------------------------------------------------------------------------
+SELECT COUNT (OrderID)
+FROM Orders 
+WHERE OrderDate >= '1997-01-01'AND OrderDate < '1998-01-01'
 -- 5. Display a table with all contacts who are business owners
 --    from Mexico, Norway, and Germany (5 rows expected)
-
+SELECT ContactName, Phone 
+FROM Customers 
+WHERE ContactTitle = 'Owner' AND Country IN ('Mexico', 'Norway', 'Germany');
 -- 6. Display the list of discontinued products (8 rows expected)
 
 -- 7. Display categories that start with 'Co' (2 rows expected)
