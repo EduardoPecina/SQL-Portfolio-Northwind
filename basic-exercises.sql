@@ -28,17 +28,40 @@ SELECT ContactName, Phone
 FROM Customers 
 WHERE ContactTitle = 'Owner' AND Country IN ('Mexico', 'Norway', 'Germany');
 -- 6. Display the list of discontinued products (8 rows expected)
-
+SELECT ProductID, ProductName
+FROM Products
+WHERE Discontinued = 1;
 -- 7. Display categories that start with 'Co' (2 rows expected)
-
+SELECT CategoryName
+FROM Categories
+WHERE CategoryName LIKE 'Co%';
 -- 8. Display a list of company names, cities, countries, and postal codes
 --    of suppliers whose address contains the word 'rue'
 --    Order the result alphabetically by company name (5 rows expected)
-
+SELECT CompanyName, City, PostalCode
+FROM Suppliers 
+WHERE Address LIKE '%rue%'
+ORDER BY CompanyName ASC;
 -- 9. Display the top 10 order IDs along with total units for each order (10 rows expected)
-
+SELECT OrderID, SUM(Quantity) AS Total_Qty
+FROM OrderDetails
+GROUP BY OrderID
+ORDER BY Total_Qty DESC 
+LIMIT 10;
 -- 10. Display the list of products in the 'Condiments' category (12 rows expected)
-
+SELECT ProductID, ProductName
+FROM Products P
+JOIN Categories C
+ON P.CategoryID = C.CategoryID 
+WHERE CategoryName = 'Condiments'
+ORDER BY ProductName ASC;
+------------------------------------------------------------------------------
+SELECT ProductID, ProductName
+FROM Products P
+JOIN Categories C
+ON P.CategoryID = C.CategoryID 
+WHERE C.CategoryID = 2
+ORDER BY ProductName ASC;
 -- 11. Select all employees with their full names who were 40 years or older
 --     at the time of hiring (3 rows expected)
 
