@@ -88,7 +88,7 @@ WHERE O.OrderID IS NULL
 --     Name the total column as 'TotalUnits' (10 rows expected)
 SELECT ProductName, SUM(UnitsInStock) AS TotalUnits 
 FROM Products 
-WHERE UnitsInStock >= 100
+WHERE UnitsInStock > 100
 GROUP BY ProductName
 ORDER BY TotalUnits DESC;
 -- 15. Display employees and customers involved in orders shipped to Brussels
