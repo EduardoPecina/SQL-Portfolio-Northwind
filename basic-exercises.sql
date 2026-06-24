@@ -64,15 +64,33 @@ WHERE C.CategoryID = 2
 ORDER BY ProductName ASC;
 -- 11. Select all employees with their full names who were 40 years or older
 --     at the time of hiring (3 rows expected)
-
+SELECT FirstName, LastName, (HireDate - BirthDate) AS Antiquity
+FROM Employees 
+WHERE Antiquity >= 40;
 -- 12. Display contact names and addresses of customers who placed orders
 --     shipped via 'Speedy Express' (249 rows expected)
-
+SELECT ContactName, Address
+FROM Customers C
+JOIN Orders O ON C.CustomerID = O.CustomerID
+WHERE ShipVia = 1
+------------------------------------------------------------------------------
+SELECT ContactName, Address 
+FROM Customers C
+JOIN Orders O ON C.CustomerID = O.CustomerID
+JOIN Shippers S ON O.ShipVia = S.ShipperID
+WHERE S.CompanyName = 'Speedy Express'
 -- 13. Display the list of customers who have not made any purchases (4 rows expected)
-
+SELECT ContactName 
+FROM Customers C
+LEFT JOIN Orders O ON C.CustomerID = O.CustomerID 
+WHERE O.OrderID IS NULL
 -- 14. Display a list of products with total units in stock greater than 100
 --     Name the total column as 'TotalUnits' (10 rows expected)
-
+SELECT ProductName, SUM(UnitsInStock) AS TotalUnits 
+FROM Products 
+WHERE UnitsInStock >= 100
+GROUP BY ProductName
+ORDER BY TotalUnits DESC;
 -- 15. Display employees and customers involved in orders shipped to Brussels
 --     via 'Speedy Express' (2 rows expected)
 
