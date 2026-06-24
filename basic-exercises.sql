@@ -93,21 +93,46 @@ GROUP BY ProductName
 ORDER BY TotalUnits DESC;
 -- 15. Display employees and customers involved in orders shipped to Brussels
 --     via 'Speedy Express' (2 rows expected)
-
+SELECT E.LastName ||' '|| E.FirstName AS Employee_Name, C.CompanyName AS Customer_Name
+FROM Employees E
+JOIN Orders O ON E.EmployeeID = O.EmployeeID 
+JOIN Customers C ON C.CustomerID = O.CustomerID 
+WHERE O.ShipCity = 'Bruxelles' AND O.ShipVia = 1;
 -- 16. Select job title and full names of employees who sold at least one unit
 --     of 'Queso Cabrales' or 'Tofu' (9 rows expected)
-
+SELECT DISTINCT E.FirstName ||' '|| E.LastName AS EmployeeName, E.Title 
+FROM Employees E 
+JOIN Orders O ON E.EmployeeID = O.EmployeeID 
+JOIN OrderDetails OD ON O.OrderID = OD.OrderID
+WHERE OD.ProductID = 11 OR OD.ProductID = 14;
 -- 17. List employees' full names along with their managers' last names
 --     (include NULLs where there is no manager) (9 rows expected)
-
+SELECT E.FirstName ||' '|| E.LastName AS EmployeeName, EE.LastName AS BossSurname
+FROM Employees E 
+LEFT JOIN Employees EE ON EE.EmployeeID = E.ReportsTo
 -- 18. Select DISTINCT contact names, product names, and supplier company names
 --     for customers in London and suppliers named 'Karkki Oy' or 'Pavlova, Ltd.' (9 rows)
-
+SELECT DISTINCT C.ContactName, P.ProductName, S.CompanyName 
+FROM Customers C
+JOIN Orders O ON C.CustomerID = O.CustomerID 
+JOIN OrderDetails OD ON O.OrderID = OD.OrderID 
+JOIN Products P ON P.ProductID = OD.ProductID 
+JOIN Suppliers S ON P.SupplierID = S.SupplierID
+WHERE C.City = 'London' AND S.CompanyName IN ('Karkki Oy', 'Pavlova, Ltd.');
 -- 19. Select product names for orders where either the customer or employee
 --     is from London (76 rows expected)
-
+SELECT DISTINCT P.ProductName
+FROM Products P 
+JOIN OrderDetails OD ON P.ProductID = OD.ProductID 
+JOIN Orders O ON OD.OrderID = O.OrderID 
+JOIN Customers C ON O.CustomerID = C.CustomerID 
+JOIN Employees E ON O.EmployeeID = E.EmployeeID 
+WHERE C.City = 'London' OR E.City = 'London';
 -- 20. Display customers who bought products with a unit price lower than 3 (26 rows)
-
+SELECT DISTINCT C.CompanyName 
+FROM Customers C
+JOIN Invoices I ON C.CustomerID = I.CustomerID 
+WHERE I.UnitPrice < 3;
 -- 21. Select full names of employees who have worked longer than any employee
 --     from London (use CURRENT_DATE) (4 rows expected)
 
@@ -153,4 +178,4 @@ ORDER BY TotalUnits DESC;
 
 -- 39. Show monthly revenue for 1997 comparing 'Beverages' vs 'Confections'
 --     Each row = month, each column = category (tabular + line chart)
-``
+
