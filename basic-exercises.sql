@@ -248,20 +248,58 @@ ORDER BY FreightRevenue DESC
 LIMIT 1;
 
 -- =========================================================================================
--- VISUALIZATIONS SECTION
+-- VISUALIZATIONS SECTION 
 -- =========================================================================================
 
 -- 35. Calculate total sales by year (tabular + column chart)
-
+SELECT strftime('%Y', I.OrderDate) AS Year, SUM(I.ExtendedPrice) AS TotalSales
+FROM Invoices I 
+GROUP BY Year
+ORDER BY Year DESC;
 -- 36. Calculate total sales by month for 1997 (tabular + line chart)
-
+SELECT strftime ('%m', I.OrderDate) AS Month, SUM (I.ExtendedPrice) AS TotalSales
+FROM Invoices I 
+WHERE strftime('%Y', I.OrderDate) = '1997'
+GROUP BY Month
+ORDER BY Month ASC;
 -- 37. Calculate total sales by year for the 'Condiments' category
 --     (tabular + bar chart)
-
+SELECT strftime('%Y', I.OrderDate) AS Year, SUM(I.ExtendedPrice) AS TotalSales
+FROM Invoices I 
+JOIN OrderDetails OD ON I.OrderID = OD.OrderID 
+JOIN Products P ON OD.ProductID = P.ProductID
+JOIN Categories C ON P.CategoryID = C.CategoryID 
+WHERE C.CategoryName = 'Condiments'
+GROUP BY Year
+ORDER BY Year DESC;
 -- 38. Show how many orders were shipped by each company:
 --     Speedy Express, United Package, Federal Shipping
 --     (tabular + pie chart)
-
+SELECT S.CompanyName, COUNT(O.OrderID) AS TotalOrders 
+FROM Orders O 
+JOIN Shippers S ON O.ShipVia = S.ShipperID 
+WHERE S.CompanyName IN ('Speedy Express', 'United Package', 'Federal Shipping')
+GROUP BY S.CompanyName
 -- 39. Show monthly revenue for 1997 comparing 'Beverages' vs 'Confections'
 --     Each row = month, each column = category (tabular + line chart)
+SELECT strftime ('%m', I.OrderDate) AS Month, 
 
+SUM(CASE 
+WHEN C.CategoryName = 'Beverages' 
+THEN I.ExtendedPrice 
+ELSE 0 
+END) AS Beverages,  
+
+SUM(CASE 
+WHEN C.CategoryName = 'Confections' 
+THEN I.ExtendedPrice 
+ELSE 0 
+END) AS Confections
+
+FROM Invoices I 
+JOIN OrderDetails OD ON I.OrderID = OD.OrderID 
+JOIN Products P ON OD.ProductID = P.ProductID 
+JOIN Categories C ON P.CategoryID = C.CategoryID 
+WHERE strftime('%Y', I.OrderDate) = '1997' AND C.CategoryName IN ('Beverages', 'Confections')
+GROUP BY Month
+ORDER BY Month ASC;
