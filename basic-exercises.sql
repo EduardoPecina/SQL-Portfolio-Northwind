@@ -7,11 +7,11 @@ SELECT CategoryName, Description
 FROM Categories;
 -- 2. Display a table with contact names, customer IDs, and company names
 --    for all customers from London (6 rows expected)
-SELECT CustomerID, CompanyName
+SELECT ContactName, CustomerID, CompanyName
 FROM Customers 
 WHERE City = 'London';
 -- 3. Display all available columns from suppliers that have a fax number (13 rows expected)
-SELECT SupplierID, CompanyName
+SELECT *
 FROM Suppliers 
 WHERE Fax IS NOT NULL;
 -- 4. Count the total number of orders from 1997 (Expected result: 408)
@@ -38,7 +38,7 @@ WHERE CategoryName LIKE 'Co%';
 -- 8. Display a list of company names, cities, countries, and postal codes
 --    of suppliers whose address contains the word 'rue'
 --    Order the result alphabetically by company name (5 rows expected)
-SELECT CompanyName, City, PostalCode
+SELECT CompanyName, City, Country, PostalCode
 FROM Suppliers 
 WHERE Address LIKE '%rue%'
 ORDER BY CompanyName ASC;
@@ -66,7 +66,7 @@ ORDER BY ProductName ASC;
 --     at the time of hiring (3 rows expected)
 SELECT FirstName, LastName, (HireDate - BirthDate) AS Antiquity
 FROM Employees 
-WHERE Antiquity >= 40;
+WHERE DATE(BirthDate, '+40 years') <= HireDate;
 -- 12. Display contact names and addresses of customers who placed orders
 --     shipped via 'Speedy Express' (249 rows expected)
 SELECT ContactName, Address
@@ -105,6 +105,13 @@ FROM Employees E
 JOIN Orders O ON E.EmployeeID = O.EmployeeID 
 JOIN OrderDetails OD ON O.OrderID = OD.OrderID
 WHERE OD.ProductID = 11 OR OD.ProductID = 14;
+-- -------------------------------------------------------------------------------
+SELECT DISTINCT E.Title, E.FirstName || ' ' || E.LastName AS NombreCompleto
+FROM Employees E
+JOIN Orders O ON E.EmployeeID = O.EmployeeID
+JOIN "Order Details" OD ON O.OrderID = OD.OrderID
+JOIN Products P ON OD.ProductID = P.ProductID
+WHERE P.ProductName IN ('Queso Cabrales', 'Tofu') AND OD.Quantity >= 1;
 -- 17. List employees' full names along with their managers' last names
 --     (include NULLs where there is no manager) (9 rows expected)
 SELECT E.FirstName ||' '|| E.LastName AS EmployeeName, EE.LastName AS BossSurname
@@ -129,7 +136,7 @@ JOIN Customers C ON O.CustomerID = C.CustomerID
 JOIN Employees E ON O.EmployeeID = E.EmployeeID 
 WHERE C.City = 'London' OR E.City = 'London';
 -- 20. Display customers who bought products with a unit price lower than 3 (26 rows)
-SELECT DISTINCT C.CompanyName 
+SELECT DISTINCT C.ContactName 
 FROM Customers C
 JOIN Invoices I ON C.CustomerID = I.CustomerID 
 WHERE I.UnitPrice < 3;
@@ -137,13 +144,22 @@ WHERE I.UnitPrice < 3;
 --     from London (use CURRENT_DATE) (4 rows expected)
 -- CTE
 -- 1. Tenure of ALL employees
-WITH total_tenure AS (SELECT FirstName ||' '|| LastName AS EmployeeName, CURRENT_DATE - HireDate AS Tenure FROM Employees),
--- 2. maximum tenure ONLY for London employees
-max_per_place AS (SELECT MAX(CURRENT_DATE - HireDate) AS max_tenure_london FROM Employees WHERE City = 'London')
+WITH total_tenure AS (SELECT FirstName || ' ' || LastName AS EmployeeName, HireDate FROM Employees),
+-- 2. earliest hire date among London employees
+min_per_place AS (SELECT MIN(HireDate) AS earliest_london FROM Employees WHERE City = 'London')
 -- 3. employees whose tenure > that value
-SELECT EmployeeName, total_tenure.Tenure
-FROM total_tenure, max_per_place 
-WHERE total_tenure.Tenure > max_per_place.max_tenure_london
+SELECT EmployeeName
+FROM total_tenure, min_per_place
+WHERE HireDate < earliest_london;
+-- -------------------------------------------------------------------------------------------------
+WITH max_per_place AS (
+    SELECT MIN(HireDate) AS earliest_london
+    FROM Employees
+    WHERE City = 'London'
+)
+SELECT FirstName || ' ' || LastName AS EmployeeName
+FROM Employees, max_per_place
+WHERE HireDate < earliest_london;
 -- 22. List the full names and the city where they live,
 -- for all employees who have sold to customers from the same city [6 rows].
 SELECT DISTINCT E.FirstName || ' ' || E.LastName AS EmployeeName, E.City AS EmployeeCity
@@ -187,11 +203,10 @@ GROUP BY ShipCity
 ORDER BY TotalRevenue DESC
 LIMIT 5;
 -- 28. Display the top 5 products by total units sold [5 rows].
-SELECT P.ProductName, SUM(I.Quantity) AS TotalQtySold 
+SELECT P.ProductName, SUM(I.Quantity) AS TotalQtySold
 FROM Products P
-JOIN OrderDetails OD ON P.ProductID = OD.ProductID 
-JOIN Invoices I ON OD.OrderID = I.OrderID 
-GROUP BY P.ProductID
+JOIN Invoices I ON P.ProductID = I.ProductID
+GROUP BY P.ProductID, P.ProductName
 ORDER BY TotalQtySold DESC
 LIMIT 5;
 -- 29. List the distinct customers who have purchased products in the 'Beverages' category [83 rows].
@@ -241,12 +256,11 @@ GROUP BY E.EmployeeID
 ORDER BY TotalRevenue DESC 
 LIMIT 1;
 -- 34. Which shipping country generated the highest total revenue from Freight?
-SELECT Country, SUM(Freight) AS FreightRevenue 
+SELECT ShipCountry, SUM(Freight) AS FreightRevenue 
 FROM Invoices 
 GROUP BY Country
 ORDER BY FreightRevenue DESC
 LIMIT 1;
-
 -- =========================================================================================
 -- VISUALIZATIONS SECTION 
 -- =========================================================================================
@@ -255,7 +269,7 @@ LIMIT 1;
 SELECT strftime('%Y', I.OrderDate) AS Year, SUM(I.ExtendedPrice) AS TotalSales
 FROM Invoices I 
 GROUP BY Year
-ORDER BY Year DESC;
+ORDER BY Year ASC;
 -- 36. Calculate total sales by month for 1997 (tabular + line chart)
 SELECT strftime ('%m', I.OrderDate) AS Month, SUM (I.ExtendedPrice) AS TotalSales
 FROM Invoices I 
@@ -264,14 +278,13 @@ GROUP BY Month
 ORDER BY Month ASC;
 -- 37. Calculate total sales by year for the 'Condiments' category
 --     (tabular + bar chart)
-SELECT strftime('%Y', I.OrderDate) AS Year, SUM(I.ExtendedPrice) AS TotalSales
-FROM Invoices I 
-JOIN OrderDetails OD ON I.OrderID = OD.OrderID 
-JOIN Products P ON OD.ProductID = P.ProductID
-JOIN Categories C ON P.CategoryID = C.CategoryID 
+SELECT strftime('%Y', I.OrderDate) AS Year, ROUND(SUM(I.ExtendedPrice), 2) AS TotalSales
+FROM Invoices I
+JOIN Products P ON P.ProductID = I.ProductID
+JOIN Categories C ON C.CategoryID = P.CategoryID
 WHERE C.CategoryName = 'Condiments'
 GROUP BY Year
-ORDER BY Year DESC;
+ORDER BY Year ASC;
 -- 38. Show how many orders were shipped by each company:
 --     Speedy Express, United Package, Federal Shipping
 --     (tabular + pie chart)
@@ -282,24 +295,13 @@ WHERE S.CompanyName IN ('Speedy Express', 'United Package', 'Federal Shipping')
 GROUP BY S.CompanyName
 -- 39. Show monthly revenue for 1997 comparing 'Beverages' vs 'Confections'
 --     Each row = month, each column = category (tabular + line chart)
-SELECT strftime ('%m', I.OrderDate) AS Month, 
-
-SUM(CASE 
-WHEN C.CategoryName = 'Beverages' 
-THEN I.ExtendedPrice 
-ELSE 0 
-END) AS Beverages,  
-
-SUM(CASE 
-WHEN C.CategoryName = 'Confections' 
-THEN I.ExtendedPrice 
-ELSE 0 
-END) AS Confections
-
-FROM Invoices I 
-JOIN OrderDetails OD ON I.OrderID = OD.OrderID 
-JOIN Products P ON OD.ProductID = P.ProductID 
-JOIN Categories C ON P.CategoryID = C.CategoryID 
-WHERE strftime('%Y', I.OrderDate) = '1997' AND C.CategoryName IN ('Beverages', 'Confections')
+SELECT strftime('%m', I.OrderDate) AS Month,
+ROUND(SUM(CASE WHEN C.CategoryName = 'Beverages' THEN I.ExtendedPrice ELSE 0 END), 2) AS Beverages,
+ROUND(SUM(CASE WHEN C.CategoryName = 'Confections' THEN I.ExtendedPrice ELSE 0 END), 2) AS Confections
+FROM Invoices I
+JOIN Products P ON P.ProductID = I.ProductID
+JOIN Categories C ON C.CategoryID = P.CategoryID
+WHERE strftime('%Y', I.OrderDate) = '1997'
+AND C.CategoryName IN ('Beverages', 'Confections')
 GROUP BY Month
 ORDER BY Month ASC;
