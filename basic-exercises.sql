@@ -17,11 +17,11 @@ WHERE Fax IS NOT NULL;
 -- 4. Count the total number of orders from 1997 (Expected result: 408)
 SELECT COUNT (OrderID)
 FROM Orders 
-WHERE OrderDate BETWEEN '1997-01-01' AND '1997-12-31'
+WHERE OrderDate BETWEEN '1997-01-01' AND '1997-12-31';
 ------------------------------------------------------------------------------
 SELECT COUNT (OrderID)
 FROM Orders 
-WHERE OrderDate >= '1997-01-01'AND OrderDate < '1998-01-01'
+WHERE OrderDate >= '1997-01-01' AND OrderDate < '1998-01-01';
 -- 5. Display a table with all contacts who are business owners
 --    from Mexico, Norway, and Germany (5 rows expected)
 SELECT ContactName, Phone 
@@ -44,7 +44,7 @@ WHERE Address LIKE '%rue%'
 ORDER BY CompanyName ASC;
 -- 9. Display the top 10 order IDs along with total units for each order (10 rows expected)
 SELECT OrderID, SUM(Quantity) AS Total_Qty
-FROM OrderDetails
+FROM "Order Details"
 GROUP BY OrderID
 ORDER BY Total_Qty DESC 
 LIMIT 10;
@@ -72,18 +72,18 @@ WHERE DATE(BirthDate, '+40 years') <= HireDate;
 SELECT ContactName, Address
 FROM Customers C
 JOIN Orders O ON C.CustomerID = O.CustomerID
-WHERE ShipVia = 1
+WHERE ShipVia = 1;
 ------------------------------------------------------------------------------
 SELECT ContactName, Address 
 FROM Customers C
 JOIN Orders O ON C.CustomerID = O.CustomerID
 JOIN Shippers S ON O.ShipVia = S.ShipperID
-WHERE S.CompanyName = 'Speedy Express'
+WHERE S.CompanyName = 'Speedy Express';
 -- 13. Display the list of customers who have not made any purchases (4 rows expected)
 SELECT ContactName 
 FROM Customers C
 LEFT JOIN Orders O ON C.CustomerID = O.CustomerID 
-WHERE O.OrderID IS NULL
+WHERE O.OrderID IS NULL;
 -- 14. Display a list of products with total units in stock greater than 100
 --     Name the total column as 'TotalUnits' (10 rows expected)
 SELECT ProductName, SUM(UnitsInStock) AS TotalUnits 
@@ -103,7 +103,7 @@ WHERE O.ShipCity = 'Bruxelles' AND O.ShipVia = 1;
 SELECT DISTINCT E.FirstName ||' '|| E.LastName AS EmployeeName, E.Title 
 FROM Employees E 
 JOIN Orders O ON E.EmployeeID = O.EmployeeID 
-JOIN OrderDetails OD ON O.OrderID = OD.OrderID
+JOIN "Order Details" OD ON O.OrderID = OD.OrderID
 WHERE OD.ProductID = 11 OR OD.ProductID = 14;
 -- -------------------------------------------------------------------------------
 SELECT DISTINCT E.Title, E.FirstName || ' ' || E.LastName AS NombreCompleto
@@ -116,13 +116,13 @@ WHERE P.ProductName IN ('Queso Cabrales', 'Tofu') AND OD.Quantity >= 1;
 --     (include NULLs where there is no manager) (9 rows expected)
 SELECT E.FirstName ||' '|| E.LastName AS EmployeeName, EE.LastName AS BossSurname
 FROM Employees E 
-LEFT JOIN Employees EE ON EE.EmployeeID = E.ReportsTo
+LEFT JOIN Employees EE ON EE.EmployeeID = E.ReportsTo;
 -- 18. Select DISTINCT contact names, product names, and supplier company names
 --     for customers in London and suppliers named 'Karkki Oy' or 'Pavlova, Ltd.' (9 rows)
 SELECT DISTINCT C.ContactName, P.ProductName, S.CompanyName 
 FROM Customers C
 JOIN Orders O ON C.CustomerID = O.CustomerID 
-JOIN OrderDetails OD ON O.OrderID = OD.OrderID 
+JOIN "Order Details" OD ON O.OrderID = OD.OrderID 
 JOIN Products P ON P.ProductID = OD.ProductID 
 JOIN Suppliers S ON P.SupplierID = S.SupplierID
 WHERE C.City = 'London' AND S.CompanyName IN ('Karkki Oy', 'Pavlova, Ltd.');
@@ -130,7 +130,7 @@ WHERE C.City = 'London' AND S.CompanyName IN ('Karkki Oy', 'Pavlova, Ltd.');
 --     is from London (76 rows expected)
 SELECT DISTINCT P.ProductName
 FROM Products P 
-JOIN OrderDetails OD ON P.ProductID = OD.ProductID 
+JOIN "Order Details" OD ON P.ProductID = OD.ProductID 
 JOIN Orders O ON OD.OrderID = O.OrderID 
 JOIN Customers C ON O.CustomerID = C.CustomerID 
 JOIN Employees E ON O.EmployeeID = E.EmployeeID 
@@ -178,13 +178,13 @@ SELECT S.CompanyName, COUNT(P.ProductID) AS TotalProdSupplied
 FROM Suppliers S 
 JOIN Products P ON S.SupplierID = P.SupplierID
 GROUP BY S.CompanyName
-HAVING TotalProdSupplied > 4
+HAVING TotalProdSupplied > 4;
 -- 25. List employee IDs, their full names, and the number of distinct products they have sold. 
 -- The result must be sorted in ascending order by employee ID [9 rows].
 SELECT E.EmployeeID, E.FirstName ||' '|| E.LastName AS EmployeeName, COUNT(DISTINCT P.ProductID) AS Count_of_Different_Products_Sold
 FROM Employees E 
 JOIN Orders O ON E.EmployeeID = O.EmployeeID 
-JOIN OrderDetails OD ON O.OrderID = OD.OrderID 
+JOIN "Order Details" OD ON O.OrderID = OD.OrderID 
 JOIN Products P ON OD.ProductID = P.ProductID 
 GROUP BY E.EmployeeID
 ORDER BY E.EmployeeID ASC;
@@ -213,7 +213,7 @@ LIMIT 5;
 SELECT DISTINCT C.CompanyName, COUNT(O.OrderID) AS TotalProducts
 FROM Customers C 
 JOIN Orders O ON C.CustomerID = O.CustomerID 
-JOIN OrderDetails OD ON O.OrderID = OD.OrderID 
+JOIN "Order Details" OD ON O.OrderID = OD.OrderID 
 JOIN Products P ON P.ProductID = OD.ProductID
 JOIN Categories CC ON CC.CategoryID = P.CategoryID 
 WHERE CC.CategoryName = 'Beverages'
@@ -223,7 +223,7 @@ ORDER BY TotalProducts DESC;
 SELECT DISTINCT C.CompanyName, SUM(OD.Quantity) AS TotalProducts
 FROM Customers C 
 JOIN Orders O ON C.CustomerID = O.CustomerID 
-JOIN OrderDetails OD ON O.OrderID = OD.OrderID 
+JOIN "Order Details" OD ON O.OrderID = OD.OrderID 
 JOIN Products P ON P.ProductID = OD.ProductID
 JOIN Categories CC ON CC.CategoryID = P.CategoryID 
 WHERE CC.CategoryName = 'Beverages'
@@ -233,13 +233,13 @@ ORDER BY TotalProducts DESC;
 SELECT S.CompanyName, COUNT(DISTINCT OD.ProductID) AS TotalDistinctProductsSold
 FROM Suppliers S
 JOIN Products P ON S.SupplierID = P.SupplierID 
-JOIN OrderDetails OD ON P.ProductID = OD.ProductID 
+JOIN "Order Details" OD ON P.ProductID = OD.ProductID 
 GROUP BY S.CompanyName 
 ORDER BY TotalDistinctProductsSold DESC;
 -- 31. How many orders were placed in June 1997?
 SELECT COUNT (O.OrderID) AS JuneTotalOrders
 FROM Orders O
-WHERE O.OrderDate >= '1997-06-01' AND O.OrderDate < '1997-07-01'
+WHERE O.OrderDate >= '1997-06-01' AND O.OrderDate < '1997-07-01';
 -- 32. What was the day with the highest number of orders in 1998?
 SELECT COUNT (O.OrderID) AS TotalOrders, O.OrderDate
 FROM Orders O
@@ -258,7 +258,7 @@ LIMIT 1;
 -- 34. Which shipping country generated the highest total revenue from Freight?
 SELECT ShipCountry, SUM(Freight) AS FreightRevenue 
 FROM Invoices 
-GROUP BY Country
+GROUP BY ShipCountry
 ORDER BY FreightRevenue DESC
 LIMIT 1;
 -- =========================================================================================
@@ -292,7 +292,7 @@ SELECT S.CompanyName, COUNT(O.OrderID) AS TotalOrders
 FROM Orders O 
 JOIN Shippers S ON O.ShipVia = S.ShipperID 
 WHERE S.CompanyName IN ('Speedy Express', 'United Package', 'Federal Shipping')
-GROUP BY S.CompanyName
+GROUP BY S.CompanyName;
 -- 39. Show monthly revenue for 1997 comparing 'Beverages' vs 'Confections'
 --     Each row = month, each column = category (tabular + line chart)
 SELECT strftime('%m', I.OrderDate) AS Month,
