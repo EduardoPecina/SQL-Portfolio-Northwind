@@ -46,3 +46,4 @@ The goal of this project is to:
 
 ## 📌 Note
 This project is part of my transition into more data-focused roles, strengthening my SQL and data analysis capabilities.
+
